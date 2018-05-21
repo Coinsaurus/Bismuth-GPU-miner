@@ -1,4 +1,9 @@
 # Bismuth GPU miner
-Public GPU miner source code for Bismuth by gladimor
+Forked from hclivess 
 
-The best way to run this miner is to move the files into the Bismuth folder, some additional dependencies like pyopencl (requires compilation) are required
+Public Coinsaurus GPU miner source code for Bismuth
+
+The best way to run this miner is to move the files into the Bismuth folder, 
+some additional dependencies like pyopencl (requires compilation) are required
+
+Additional instructions to be added.

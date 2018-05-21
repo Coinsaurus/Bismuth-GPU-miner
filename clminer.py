@@ -32,13 +32,14 @@ class oclResultQueue:
         self.resultQueue_.put( candidate )
 
 class oclDevice:
-    def __init__(self, threadId, platId, devId, resultQueue):
+    def __init__(self, threadId, platId, devId, resultQueue, statsQueue = None):
         self.devId_ = devId
         self.platId_ = platId
         self.thread_ = None
         self.threadId_ = threadId
         self.threadCount_ = 0
         self.resultQueue_ = resultQueue
+        self.statsQueue = statsQueue
 
     def getName( self ):
         return self.device_.name
@@ -242,8 +243,11 @@ class oclDevice:
             if (loop & 1) == 0:
                 hashesCnt = loop * 2 * self.hashCount()
                 cycles_per_second = hashesCnt/looptime
-                print( "Thread{} {} @ {:,.4f} sec, {:,.2f} cycles/second, hashes: {:,}".format(
-                    self.threadId_, self.label_, looptime, cycles_per_second, hashesCnt ) )
+                if self.statsQueue is None:
+                    print( "Thread{} {} @ {:,.4f} sec, {:,.2f} cycles/second, hashes: {:,}".format(
+                        self.threadId_, self.label_, looptime, cycles_per_second, hashesCnt ) )
+                else:
+                    self.statsQueue.put([self.threadId_, looptime, cycles_per_second, hashesCnt])
                 loop = 0
                 looptime = 0
 
@@ -251,6 +255,7 @@ class oclDevice:
         if self.thread_ is None:
             self.running_ = True
             self.thread_ = threading.Thread( target=self.processLoop )
+            self.thread_.daemon = True
             self.thread_.start()
 
     def stopMining(self):
@@ -261,7 +266,7 @@ class ocl:
     def __init__(self):
         self.devices_ = []
 
-    def setupCL(self, resultQueue):
+    def setupCL(self, resultQueue, statsQueue=None):
         platId = 0
         i = 0
         print( "Searching for OpenCL devices..." )
@@ -271,7 +276,7 @@ class ocl:
             devs = plat.get_devices( device_type=cl.device_type.GPU )
             for dev in devs:
                 print( "Device {}: {} ({} threads)".format( i, dev.name, dev.max_work_group_size ) )
-                self.devices_.append( oclDevice( i+1, platId, devId, resultQueue ) )
+                self.devices_.append( oclDevice( i+1, platId, devId, resultQueue, statsQueue) )
                 i = i + 1
                 devId = devId + 1
             platId = platId + 1
