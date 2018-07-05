@@ -44,7 +44,7 @@ def get_socket():
             try:
                 test_socket = socks.socksocket()
                 ip_addr = socket.gethostbyname(pool_ip)
-                test_socket.connect((ip_addr, int(8029)))
+                test_socket.connect((ip_addr, int(8028)))
                 test_socket.setblocking(1)
                 pool_socket = test_socket
             except Exception as e:
